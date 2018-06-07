@@ -1,0 +1,37 @@
+#!/usr/bin/env perl -w 
+use warnings;
+#use strict;
+
+use Getopt::Long;
+
+my @names;
+my ($LOOKING,$INSTATE)=(0,1);
+my $state=$LOOKING;
+
+# получить аргументы командной строки
+my %options;
+GetOptions("values=s" => \$options{"values"}) 
+	or die "invalid values:$!";
+
+print $options{'values'} . "\n";
+#	if defined($options{'values'});
+
+while (<>) {
+	if (($state==$LOOKING) && m/---/) {
+    $state=$INSTATE;
+  }
+  if (($state==$INSTATE) && m/^FieldName:\s+(.*)$/) {    	
+		push(@names,$1);
+    $state=$LOOKING;
+  }
+}
+
+print "@ARGV\n";
+
+print '$fields={',"\n";
+print join(",\n",map {
+		my $value = pop @ARGV || $_;
+		sprintf("'%s' =>q {%s}",$value,$value);
+	} @names);
+print "\n};\n";
+
